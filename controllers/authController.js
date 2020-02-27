@@ -29,14 +29,33 @@ router.post("/register", async (req, res) => {
   }
 });
 
-router.put("/usuarios/:id", (req, res) => {
-  console.log("teste");
-  return res.json(req.body);
+router.put("/usuarios/:id", async (req, res) => {
+  const { name, email } = req.body;
+  const id = req.params.id;
+  try {
+    let user = await User.findOne({ _id: id });
+    if (!user) {
+      return res.status(400).json({ message: "Usuario não encontrado.." });
+    } else {
+      user.name = name;
+      user.email = email;
+
+      const result = await user.save();
+      //console.log("salvou: ", result);
+      return res.json({ name: `${user.name}`, email: `${user.email}` });
+    }
+  } catch (erro) {
+    //console.log(erro);
+    return res.json({ Problem: `${erro}` });
+  }
 });
 
-router.delete("/delete/:id", (req, res) => {
-  console.log("deletando");
-  return res.json(req.body);
+router.delete("/delete/:id", async (req, res) => {
+  const id = req.params.id;
+  const user = await User.findOne({ _id: id });
+
+  user.delete();
+  return res.json({ messege: "deletado com sucesso " });
 });
 
 module.exports = app => app.use("/auth", router);
